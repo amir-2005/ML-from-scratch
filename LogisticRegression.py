@@ -10,11 +10,12 @@ class LogisticReg():
     - reg_rate (float): The regularization rate (lambda) for L2 regularization.
     """
 
-    def __init__(self, learning_rate=0.1, n_iter=5000, reg_rate=1):
+    def __init__(self, learning_rate=0.1, n_iter=5000, reg_rate=1, verbose_rate=100):
         self.learning_rate = learning_rate
         self.n_iter = n_iter
         self.reg_rate = reg_rate
         self.coef = None
+        self.verbose_rate = verbose_rate
 
     def __sigmoid(self, z):
         """Sigmoid activation function to map any real number to (0, 1)."""
@@ -34,6 +35,7 @@ class LogisticReg():
         """
         m = x.shape[0]
         z = self.__sigmoid(x @ coef)
+        z = np.clip(z, 1e-9, 1 - 1e-9) # for numerical stability
         cost = -y * np.log(z) - (1-y) * np.log(1-z)
         reg_term = self.reg_rate * (coef ** 2)
         reg_term[0] = 0  # Do not regularize the bias term
@@ -67,7 +69,8 @@ class LogisticReg():
             reg_gradient[0] = 0
             # Update coefficients using gradient descent with L2 regularization
             self.coef -= self.learning_rate * (gradient + reg_gradient)    
-            print(f"Iteration : {iteration+1} Cost : {self.__cost(X , self.coef, Y)}")
+            if iteration % self.verbose_rate == 0:
+                print(f"Iteration : {iteration+1} Cost : {self.__cost(X , self.coef, Y)}")
         
         return self
 
